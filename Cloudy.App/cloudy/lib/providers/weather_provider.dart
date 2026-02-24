@@ -60,22 +60,28 @@ class WeatherProvider extends ChangeNotifier {
     required double lat,
     required double lon,
   }) async {
+    debugPrint('🌍 [fetchWeatherByCoords] START - lat: $lat, lon: $lon');
     _state = _state.copyWith(
       status: WeatherStatus.loading,
       city: '',
     );
     notifyListeners();
+    debugPrint('🌍 [fetchWeatherByCoords] Sent LOADING state');
 
     try {
+      debugPrint('🌍 [fetchWeatherByCoords] Calling API...');
       final result = await _repository.apiCallByCoords(lat: lat, lon: lon);
+      debugPrint('🌍 [fetchWeatherByCoords] API returned');
 
       if (result != null) {
         final current = result['current'] as WeatherData?;
         final daily = result['daily'] as ForecastData?;
         final hourly = result['hourly'] as HourlyForecastData?;
+        debugPrint('🌍 [fetchWeatherByCoords] Parsed: current=${current?.name}, daily=${daily?.list?.length}, hourly=${hourly?.list?.length}');
 
         if (current != null) {
           final cityName = (current.name ?? '').trim();
+          debugPrint('🌍 [fetchWeatherByCoords] Setting SUCCESS state for: $cityName');
           _state = _state.copyWith(
             status: WeatherStatus.success,
             data: current,
@@ -84,7 +90,9 @@ class WeatherProvider extends ChangeNotifier {
             error: '',
             city: cityName,
           );
+          debugPrint('🌍 [fetchWeatherByCoords] Calling notifyListeners()...');
           notifyListeners();
+          debugPrint('🌍 [fetchWeatherByCoords] notifyListeners() DONE - returning city: $cityName');
           return cityName.isEmpty ? null : cityName;
         }
       }
