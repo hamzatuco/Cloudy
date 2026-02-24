@@ -2,7 +2,9 @@ import 'dart:ui';
 
 import 'package:cloudy/core/storage/app_storage.dart';
 import 'package:cloudy/screens/city_search_dialog.dart';
+import 'package:cloudy/widgets/side_menu.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'seven_days_screen.dart';
@@ -22,6 +24,29 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _bgMid = Color(0xFF1565C0);
   static const _bgBottom = Color(0xFF060C22);
 
+  bool _isFavorite = false;
+  String _currentCity = '';
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void _toggleFavorite(String cityName) async {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+
+    if (_isFavorite) {
+      await AppStorage.setFavoriteCity(cityName);
+      print('❤️ [HomeScreen] Added $cityName to favorites');
+    } else {
+      // Clear favorite when toggling off
+      await AppStorage.setFavoriteCity('');
+      print('🤍 [HomeScreen] Removed $cityName from favorites');
+    }
+  }
+
   String _assetForCondition(String? main) {
     final v = (main ?? '').toLowerCase().trim();
     if (v.contains('thunder')) return 'assets/thunder.json';
@@ -35,6 +60,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (v.contains('cloud')) return 'assets/cloudy_day.json';
     return 'assets/clear_day.json';
   }
+
+
+
 
   Future<void> _changeCity() async {
     final city = await showDialog<String?>(
@@ -120,51 +148,98 @@ class _HomeScreenState extends State<HomeScreen> {
                     // ── Top bar ─────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
-                      child: Center(
-                        // ── City glass pill — tappable ──────────────
-                        child: GestureDetector(
-                          onTap: _changeCity,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 18,
-                                  vertical: 9,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(50),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.25),
-                                    width: 1,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // ── Hamburger menu button (top left) ────────────────────
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.all(6),
+                              child: const SideMenu(),
+                            ),
+                          ),
+
+                          // ── City glass pill — tappable (center) ──────────────
+                          GestureDetector(
+                            onTap: _changeCity,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(50),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 9,
                                   ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.location_on_rounded,
-                                      color: Colors.white,
-                                      size: 16,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(50),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.25),
+                                      width: 1,
                                     ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      name.isEmpty ? 'Cloudy' : name,
-                                      style: const TextStyle(
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.location_on_rounded,
                                         color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.2,
+                                        size: 16,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        name.isEmpty ? 'Cloudy' : name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 0.2,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+
+                          // ── Heart button (top right) ────────────────────
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {
+                                // TODO: Implement favorite toggle
+                                print('❤️ [HomeScreen] Favorite button tapped for: $name');
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                                  child: Container(
+                                    width: 42,
+                                    height: 42,
+                                    margin: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.15),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.25),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.favorite_outline,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
@@ -221,24 +296,37 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 32),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                _statItem(
-                                  icon: Icons.air_rounded,
-                                  label: 'Wind',
-                                  value:
-                                      '${weather.wind?.speed?.toStringAsFixed(0) ?? '--'} km/h',
+                                Expanded(
+                                  child: _statItem(
+                                    icon: Icons.air_rounded,
+                                    label: 'Wind',
+                                    value:
+                                        '${weather.wind?.speed?.toStringAsFixed(0) ?? '--'} km/h',
+                                  ),
                                 ),
-                                _divider(),
-                                _statItem(
-                                  icon: Icons.water_drop_outlined,
-                                  label: 'Humidity',
-                                  value: '${weather.main?.humidity ?? '--'}%',
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: _divider(),
                                 ),
-                                _divider(),
-                                _statItem(
-                                  icon: Icons.umbrella_outlined,
-                                  label: 'Chance of rain',
-                                  value: chancePct,
+                                Expanded(
+                                  child: _statItem(
+                                    icon: Icons.water_drop_outlined,
+                                    label: 'Humidity',
+                                    value: '${weather.main?.humidity ?? '--'}%',
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: _divider(),
+                                ),
+                                Expanded(
+                                  child: _statItem(
+                                    icon: Icons.umbrella_outlined,
+                                    label: 'Chance of rain',
+                                    value: chancePct,
+                                  ),
                                 ),
                               ],
                             ),
@@ -422,6 +510,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required String value,
   }) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(icon, color: Colors.white.withValues(alpha: 0.70), size: 22),
         const SizedBox(height: 6),
@@ -432,6 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 2),
         Text(
@@ -449,8 +540,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _divider() {
     return Container(
       width: 1,
-      height: 36,
-      color: Colors.white.withValues(alpha: 0.15),
+      height: 48,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+      ),
     );
   }
 
