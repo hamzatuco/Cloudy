@@ -100,8 +100,8 @@ class Coord {
   Coord({this.lon, this.lat});
 
   Coord.fromJson(Map<String, dynamic> json) {
-    lon = json['lon'];
-    lat = json['lat'];
+    lon = (json['lon'] as num?)?.toDouble();
+    lat = (json['lat'] as num?)?.toDouble();
   }
 
   Map<String, dynamic> toJson() {
@@ -169,10 +169,10 @@ class Main {
   });
 
   Main.fromJson(Map<String, dynamic> json) {
-    temp = json['temp'];
-    feelsLike = json['feels_like'];
-    tempMin = json['temp_min'];
-    tempMax = json['temp_max'];
+    temp = (json['temp'] as num?)?.toDouble();
+    feelsLike = (json['feels_like'] as num?)?.toDouble();
+    tempMin = (json['temp_min'] as num?)?.toDouble();
+    tempMax = (json['temp_max'] as num?)?.toDouble();
     pressure = json['pressure'];
     humidity = json['humidity'];
     seaLevel = json['sea_level'];
@@ -205,8 +205,8 @@ class Wind {
   Wind({this.speed, this.deg});
 
   Wind.fromJson(Map<String, dynamic> json) {
-    speed = json['speed'];
-    deg = json['deg'];
+    speed = (json['speed'] as num?)?.toDouble();
+    deg = (json['deg'] as num?)?.toDouble();
   }
 
   Map<String, dynamic> toJson() {

@@ -37,15 +37,62 @@ class WeatherProvider extends ChangeNotifier {
         } else {
           _state = _state.copyWith(
             status: WeatherStatus.failure,
-            error: 'Unable to fetch weather data for $city',
+            error: 'Got response but no weather data for "$city". Check API key or city name.',
           );
         }
       } else {
         _state = _state.copyWith(
           status: WeatherStatus.failure,
-          error: 'Unable to fetch weather data for $city',
+          error: 'Network error — check internet connection. City: $city',
         );
       }
+    } catch (e) {
+      _state = _state.copyWith(
+        status: WeatherStatus.failure,
+        error: 'Exception: ${e.toString()}',
+      );
+    }
+
+    notifyListeners();
+  }
+
+  Future<String?> fetchWeatherByCoords({
+    required double lat,
+    required double lon,
+  }) async {
+    _state = _state.copyWith(
+      status: WeatherStatus.loading,
+      city: '',
+    );
+    notifyListeners();
+
+    try {
+      final result = await _repository.apiCallByCoords(lat: lat, lon: lon);
+
+      if (result != null) {
+        final current = result['current'] as WeatherData?;
+        final daily = result['daily'] as ForecastData?;
+        final hourly = result['hourly'] as HourlyForecastData?;
+
+        if (current != null) {
+          final cityName = (current.name ?? '').trim();
+          _state = _state.copyWith(
+            status: WeatherStatus.success,
+            data: current,
+            forecast: daily,
+            hourlyForecast: hourly,
+            error: '',
+            city: cityName,
+          );
+          notifyListeners();
+          return cityName.isEmpty ? null : cityName;
+        }
+      }
+
+      _state = _state.copyWith(
+        status: WeatherStatus.failure,
+        error: 'Unable to fetch weather data for your location',
+      );
     } catch (e) {
       _state = _state.copyWith(
         status: WeatherStatus.failure,
@@ -54,6 +101,7 @@ class WeatherProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+    return null;
   }
 
   Future<void> retry() async {

@@ -21,8 +21,8 @@ class GeoData {
 
   GeoData.fromJson(List<dynamic> json) {
     name = json[0]['name'];
-    lat = json[0]['lat'];
-    lon = json[0]['lon'];
+    lat = (json[0]['lat'] as num?)?.toDouble();
+    lon = (json[0]['lon'] as num?)?.toDouble();
     country = json[0]['country'];
     state = json[0]['state'];
   }
