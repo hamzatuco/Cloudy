@@ -10,8 +10,10 @@ import '../core/constants/api_endpoints.dart';
     final apiKey = kIsWeb 
         ? '05f29dd2f3a04ab697ac038251b8422a' 
         : (dotenv.env['WEATHER_API_KEY'] ?? '');
+
+
 class WeatherRepository {
-  static void getGeoData(String city) async {
+  static Future<GeoData> getGeoData(String city) async {
     
     String url = baseUrl + geoDirect + '?q=${city}&limit=5&appid=' + apiKey;
     var res = await http.get(Uri.parse(url));
@@ -21,10 +23,11 @@ class WeatherRepository {
 
     print(geoData.toString());
     print(url);
+    return geoData;
   }
 
 
-  static void getWeatherData() async {
+  static Future<WeatherData> getWeatherData() async {
   
     
     String url = baseUrl + "/data/2.5/weather?lat=43.8519774&lon=18.3866868&units=metric&appid=" + apiKey;
@@ -33,6 +36,7 @@ class WeatherRepository {
     // print(res.body);
     print(weatherData.toString());
     print(res.body);
+    return weatherData;
   }
 
 }
