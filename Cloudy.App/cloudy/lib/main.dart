@@ -1,6 +1,13 @@
+import 'package:cloudy/repositories/weather_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  if (!kIsWeb) {
+    await dotenv.load(fileName: ".env");
+  }
+  WeatherRepository.getGeoData();
   runApp(const MyApp());
 }
 
