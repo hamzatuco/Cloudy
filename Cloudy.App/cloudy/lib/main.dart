@@ -7,7 +7,7 @@ Future<void> main() async {
   if (!kIsWeb) {
     await dotenv.load(fileName: ".env");
   }
-  WeatherRepository.getGeoData();
+  WeatherRepository.getGeoData("Sarajevo");
   runApp(const MyApp());
 }
 

@@ -1,42 +1,43 @@
 class GeoData {
-  final String? name;
-  final LocalNames? localNames;
-  final double? lat;
-  final double? lon;
-  final String? country;
-  final String? state;
+  String? name;
+  LocalNames? localNames;
+  double? lat;
+  double? lon;
+  String? country;
+  String? state;
 
-  GeoData({
-    this.name,
-    this.localNames,
-    this.lat,
-    this.lon,
-    this.country,
-    this.state,
-  });
 
-  factory GeoData.fromJson(Map<String, dynamic> json) {
-    return GeoData(
-      name: json['name'],
-      localNames: json['local_names'] != null
-          ? LocalNames.fromJson(json['local_names'])
-          : null,
-      lat: json['lat'],
-      lon: json['lon'],
-      country: json['country'],
-      state: json['state'],
-    );
+@override
+  String toString() {
+    return 'GeoData{name: $name, lat: $lat, lon: $lon, country: $country, state: $state}';
+  }
+  GeoData(
+      {this.name,
+      this.localNames,
+      this.lat,
+      this.lon,
+      this.country,
+      this.state});
+
+  GeoData.fromJson(List<dynamic> json) {
+    name = json[0]['name'];
+    lat = json[0]['lat'];
+    lon = json[0]['lon'];
+    country = json[0]['country'];
+    state = json[0]['state'];
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'local_names': localNames?.toJson(),
-      'lat': lat,
-      'lon': lon,
-      'country': country,
-      'state': state,
-    };
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['name'] = this.name;
+    if (this.localNames != null) {
+      data['local_names'] = this.localNames!.toJson();
+    }
+    data['lat'] = this.lat;
+    data['lon'] = this.lon;
+    data['country'] = this.country;
+    data['state'] = this.state;
+    return data;
   }
 }
 
