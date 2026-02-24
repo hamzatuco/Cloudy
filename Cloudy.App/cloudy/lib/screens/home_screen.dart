@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cloudy/core/storage/app_storage.dart';
+import 'package:cloudy/screens/city_search_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
@@ -26,54 +27,19 @@ class _HomeScreenState extends State<HomeScreen> {
     if (v.contains('thunder')) return 'assets/thunder.json';
     if (v.contains('snow')) return 'assets/snow.json';
     if (v.contains('rain') || v.contains('drizzle')) return 'assets/rain.json';
-    if (v.contains('mist') || v.contains('fog') || v.contains('haze') || v.contains('smoke')) return 'assets/mist.json';
+    if (v.contains('mist') ||
+        v.contains('fog') ||
+        v.contains('haze') ||
+        v.contains('smoke'))
+      return 'assets/mist.json';
     if (v.contains('cloud')) return 'assets/cloudy_day.json';
     return 'assets/clear_day.json';
   }
 
   Future<void> _changeCity() async {
-    final controller = TextEditingController();
     final city = await showDialog<String?>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0D1B3E),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Change city', style: TextStyle(color: Colors.white)),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.white),
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-            hintText: 'Enter a city name',
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-            filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.08),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-          onSubmitted: (_) =>
-              Navigator.of(context).pop(controller.text.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(null),
-            child:
-                Text('Cancel', style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF2196F3),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () =>
-                Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('Search'),
-          ),
-        ],
-      ),
+      builder: (context) => const CitySearchDialog(),
     );
 
     final value = (city ?? '').trim();
@@ -86,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('🏠 [HomeScreen.build] START');
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: _bgBottom,
@@ -109,11 +76,14 @@ class _HomeScreenState extends State<HomeScreen> {
           SafeArea(
             child: Consumer<WeatherProvider>(
               builder: (context, weatherProvider, child) {
+                debugPrint('🏠 [HomeScreen.Consumer] Rebuilding');
                 final state = weatherProvider.state;
+                debugPrint('🏠 [HomeScreen.Consumer] State: ${state.status}');
 
                 if (state.status == WeatherStatus.loading) {
                   return const Center(
-                      child: CircularProgressIndicator(color: Colors.white));
+                    child: CircularProgressIndicator(color: Colors.white),
+                  );
                 }
 
                 if (state.status == WeatherStatus.failure) {
@@ -139,8 +109,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 final chance = (hourly?.list?.isNotEmpty == true
                     ? hourly!.list!.first.pop
                     : null);
-                final chancePct =
-                    chance == null ? '--' : '${(chance * 100).round()}%';
+                final chancePct = chance == null
+                    ? '--'
+                    : '${(chance * 100).round()}%';
 
                 final name = weather.name?.trim() ?? '';
 
@@ -149,26 +120,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     // ── Top bar ─────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Search button — far left
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: _glassIconButton(
-                              icon: Icons.search,
-                              onTap: _changeCity,
-                            ),
-                          ),
-
-                          // ── City glass pill — centred ──────────────
-                          ClipRRect(
+                      child: Center(
+                        // ── City glass pill — tappable ──────────────
+                        child: GestureDetector(
+                          onTap: _changeCity,
+                          child: ClipRRect(
                             borderRadius: BorderRadius.circular(50),
                             child: BackdropFilter(
                               filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 18, vertical: 9),
+                                  horizontal: 18,
+                                  vertical: 9,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(50),
@@ -180,8 +144,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.location_on_rounded,
-                                        color: Colors.white, size: 16),
+                                    const Icon(
+                                      Icons.location_on_rounded,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                     const SizedBox(width: 6),
                                     Text(
                                       name.isEmpty ? 'Cloudy' : name,
@@ -197,9 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-
-                          // Removed: Calendar button navigation (available in Today panel)
-                        ],
+                        ),
                       ),
                     ),
 
@@ -253,11 +218,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // Stats row
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 32),
+                            padding: const EdgeInsets.symmetric(horizontal: 32),
                             child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 _statItem(
                                   icon: Icons.air_rounded,
@@ -269,8 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 _statItem(
                                   icon: Icons.water_drop_outlined,
                                   label: 'Humidity',
-                                  value:
-                                      '${weather.main?.humidity ?? '--'}%',
+                                  value: '${weather.main?.humidity ?? '--'}%',
                                 ),
                                 _divider(),
                                 _statItem(
@@ -286,8 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
 
                     // ── Dark bottom panel ────────────────────────────
-                    if (hourly?.list != null)
-                      _bottomPanel(hourly!, context),
+                    if (hourly?.list != null) _bottomPanel(hourly!, context),
                   ],
                 );
               },
@@ -307,8 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           decoration: BoxDecoration(
             color: const Color(0xFF080E24).withValues(alpha: 0.85),
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(32)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             border: Border(
               top: BorderSide(
                 color: Colors.white.withValues(alpha: 0.08),
@@ -316,8 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          padding:
-              const EdgeInsets.fromLTRB(20, 18, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -336,7 +295,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   GestureDetector(
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                          builder: (_) => const SevenDaysScreen()),
+                        builder: (_) => const SevenDaysScreen(),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -347,9 +307,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontSize: 14,
                           ),
                         ),
-                        Icon(Icons.chevron_right,
-                            color: Colors.white.withValues(alpha: 0.70),
-                            size: 18),
+                        Icon(
+                          Icons.chevron_right,
+                          color: Colors.white.withValues(alpha: 0.70),
+                          size: 18,
+                        ),
                       ],
                     ),
                   ),
@@ -360,18 +322,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 110,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount:
-                      (hourly.list!.length > 8) ? 8 : hourly.list!.length,
+                  itemCount: (hourly.list!.length > 8)
+                      ? 8
+                      : hourly.list!.length,
                   itemBuilder: (context, index) {
                     final item = hourly.list![index];
                     final time = DateTime.fromMillisecondsSinceEpoch(
-                        (item.dt ?? 0) * 1000);
+                      (item.dt ?? 0) * 1000,
+                    );
                     final main = item.weather?.first.main;
                     final iconAsset = _assetForCondition(main);
                     final temp =
                         '${item.main?.temp?.toStringAsFixed(0) ?? '--'}°';
-                    final hour =
-                        '${time.hour.toString().padLeft(2, '0')}:00';
+                    final hour = '${time.hour.toString().padLeft(2, '0')}:00';
 
                     final isNow = index == 0;
 
@@ -498,8 +461,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded,
-                color: Colors.white.withValues(alpha: 0.5), size: 64),
+            Icon(
+              Icons.cloud_off_rounded,
+              color: Colors.white.withValues(alpha: 0.5),
+              size: 64,
+            ),
             const SizedBox(height: 16),
             Text(
               error.isEmpty ? "Couldn't load forecast." : error,
@@ -514,7 +480,8 @@ class _HomeScreenState extends State<HomeScreen> {
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF2196F3),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () => provider.retry(),
               child: const Text('Try again'),
@@ -532,13 +499,18 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_outlined,
-                color: Colors.white.withValues(alpha: 0.5), size: 64),
+            Icon(
+              Icons.cloud_outlined,
+              color: Colors.white.withValues(alpha: 0.5),
+              size: 64,
+            ),
             const SizedBox(height: 16),
             Text(
               'Pick a city to see the forecast.',
               style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8), fontSize: 16),
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 16,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -546,7 +518,8 @@ class _HomeScreenState extends State<HomeScreen> {
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF2196F3),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: _changeCity,
               child: const Text('Pick a city'),
@@ -561,46 +534,17 @@ class _HomeScreenState extends State<HomeScreen> {
       const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][weekday - 1];
 
   String _month(int month) => const [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ][month - 1];
-
-  Widget _glassIconButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(50),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: Container(
-            width: 42,
-            height: 42,
-            margin: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.25),
-                width: 1,
-              ),
-            ),
-            child: Icon(icon, color: Colors.white, size: 20),
-          ),
-        ),
-      ),
-    );
-  }
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ][month - 1];
 }
