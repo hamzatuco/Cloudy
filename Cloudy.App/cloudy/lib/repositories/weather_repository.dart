@@ -7,36 +7,52 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../core/constants/api_endpoints.dart';
 
-    final apiKey = kIsWeb 
-        ? '05f29dd2f3a04ab697ac038251b8422a' 
-        : (dotenv.env['WEATHER_API_KEY'] ?? '');
-
+final apiKey = kIsWeb
+    ? '05f29dd2f3a04ab697ac038251b8422a'
+    : (dotenv.env['WEATHER_API_KEY'] ?? '');
 
 class WeatherRepository {
   static Future<GeoData> getGeoData(String city) async {
-    
-    String url = baseUrl + geoDirect + '?q=${city}&limit=5&appid=' + apiKey;
-    var res = await http.get(Uri.parse(url));
-    
-    GeoData geoData = GeoData.fromJson(jsonDecode( res.body));
+    String url = '$baseUrl$geoDirect?q=${city}&limit=5&appid=$apiKey';
 
+    try {
+      var res = await http.get(Uri.parse(url));
 
-    print(geoData.toString());
-    print(url);
-    return geoData;
+      GeoData geoData = GeoData.fromJson(jsonDecode(res.body));
+
+      print(geoData.toString());
+      print(url);
+      return geoData;
+    } catch (e) {
+      rethrow;
+    }
   }
 
+  static Future<WeatherData> getWeatherData(GeoData geoData) async {
+    String url =
+        baseUrl +
+        "/data/2.5/weather?lat=${geoData.lat}&lon=${geoData.lon}&units=metric&appid=" +
+        apiKey;
 
-  static Future<WeatherData> getWeatherData() async {
-  
-    
-    String url = baseUrl + "/data/2.5/weather?lat=43.8519774&lon=18.3866868&units=metric&appid=" + apiKey;
-    var res = await http.get(Uri.parse(url));
-    WeatherData weatherData = WeatherData.fromJson(jsonDecode(res.body));
-    // print(res.body);
-    print(weatherData.toString());
-    print(res.body);
-    return weatherData;
+    try {
+      var res = await http.get(Uri.parse(url));
+      WeatherData weatherData = WeatherData.fromJson(jsonDecode(res.body));
+      print(weatherData.toString());
+      print(res.body);
+
+      return weatherData;
+    } catch (e) {
+      rethrow;
+    }
   }
 
+  static Future<WeatherData> apiCall(String city) async {
+    try {
+      final GeoData geoData = await getGeoData(city);
+      final WeatherData weatherData = await getWeatherData(geoData);
+      return weatherData;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
