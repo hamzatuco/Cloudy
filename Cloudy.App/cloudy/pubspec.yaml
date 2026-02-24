@@ -43,6 +43,9 @@ dependencies:
   
   # Environment variables for API keys
   flutter_dotenv: ^5.2.1
+  
+  # Equatable for value equality
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:
