@@ -18,20 +18,21 @@ class WeatherData {
     return 'WeatherData(name: $name, temp: ${main?.temp}, humidity: ${main?.humidity}, description: ${weather?.first.description}, windSpeed: ${wind?.speed})';
   }
 
-  WeatherData(
-      {this.coord,
-      this.weather,
-      this.base,
-      this.main,
-      this.visibility,
-      this.wind,
-      this.clouds,
-      this.dt,
-      this.sys,
-      this.timezone,
-      this.id,
-      this.name,
-      this.cod});
+  WeatherData({
+    this.coord,
+    this.weather,
+    this.base,
+    this.main,
+    this.visibility,
+    this.wind,
+    this.clouds,
+    this.dt,
+    this.sys,
+    this.timezone,
+    this.id,
+    this.name,
+    this.cod,
+  });
 
   WeatherData.fromJson(Map<String, dynamic> json) {
     coord = json['coord'] != null ? new Coord.fromJson(json['coord']) : null;
@@ -45,8 +46,9 @@ class WeatherData {
     main = json['main'] != null ? new Main.fromJson(json['main']) : null;
     visibility = json['visibility'];
     wind = json['wind'] != null ? new Wind.fromJson(json['wind']) : null;
-    clouds =
-        json['clouds'] != null ? new Clouds.fromJson(json['clouds']) : null;
+    clouds = json['clouds'] != null
+        ? new Clouds.fromJson(json['clouds'])
+        : null;
     dt = json['dt'];
     sys = json['sys'] != null ? new Sys.fromJson(json['sys']) : null;
     timezone = json['timezone'];
@@ -94,6 +96,7 @@ class Coord {
   String toString() {
     return 'Coord(lon: $lon, lat: $lat)';
   }
+
   Coord({this.lon, this.lat});
 
   Coord.fromJson(Map<String, dynamic> json) {
@@ -154,15 +157,16 @@ class Main {
     return 'Main(temp: $temp, feelsLike: $feelsLike, humidity: $humidity, pressure: $pressure)';
   }
 
-  Main(
-      {this.temp,
-      this.feelsLike,
-      this.tempMin,
-      this.tempMax,
-      this.pressure,
-      this.humidity,
-      this.seaLevel,
-      this.grndLevel});
+  Main({
+    this.temp,
+    this.feelsLike,
+    this.tempMin,
+    this.tempMax,
+    this.pressure,
+    this.humidity,
+    this.seaLevel,
+    this.grndLevel,
+  });
 
   Main.fromJson(Map<String, dynamic> json) {
     temp = json['temp'];
@@ -191,12 +195,13 @@ class Main {
 
 class Wind {
   double? speed;
-  int? deg;
+  double? deg;
 
   @override
   String toString() {
     return 'Wind(speed: $speed, deg: $deg)';
   }
+
   Wind({this.speed, this.deg});
 
   Wind.fromJson(Map<String, dynamic> json) {
@@ -239,6 +244,7 @@ class Sys {
   String toString() {
     return 'Sys(type: $type, id: $id, country: $country, sunrise: $sunrise, sunset: $sunset)';
   }
+
   Sys({this.type, this.id, this.country, this.sunrise, this.sunset});
 
   Sys.fromJson(Map<String, dynamic> json) {
