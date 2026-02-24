@@ -190,7 +190,7 @@ class Main {
 }
 
 class Wind {
-  int? speed;
+  double? speed;
   int? deg;
 
   @override
