@@ -75,6 +75,20 @@ class _HomeScreenState extends State<HomeScreen> {
     await context.read<WeatherProvider>().fetchWeather(value);
   }
 
+  Future<void> _onRefresh() async {
+    final currentCity = await AppStorage.getFavoriteCity();
+    if (currentCity?.isEmpty != false || !mounted) return;
+
+    debugPrint(
+      '🔄 [HomeScreen.onRefresh] Refreshing weather for: $currentCity',
+    );
+    await context.read<WeatherProvider>().fetchWeather(currentCity!);
+
+    if (mounted) {
+      debugPrint('✅ [HomeScreen.onRefresh] Refresh complete');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     debugPrint('🏠 [HomeScreen.build] START');
@@ -140,236 +154,249 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 final name = weather.name?.trim() ?? '';
 
-                return Stack(
-                  children: [
-                    // ── Glavni sadržaj u Column ──────────────────────
-                    Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        // ── Top bar ─────────────────────────────────────
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // ── Hamburger menu button (top left) ────────────────────
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: const SideMenu(),
-                                ),
-                              ),
-
-                              // ── City glass pill — tappable (center) ──────────────
-                              GestureDetector(
-                                onTap: _changeCity,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(50),
-                                  child: BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                      sigmaX: 16,
-                                      sigmaY: 16,
-                                    ),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 18,
-                                        vertical: 9,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.15,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(50),
-                                        border: Border.all(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.25,
-                                          ),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(
-                                            Icons.location_on_rounded,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            name.isEmpty ? 'Cloudy' : name,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              letterSpacing: 0.2,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // ── Heart button (top right) ────────────────────
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    // TODO: Implement favorite toggle
-                                    print(
-                                      '❤️ [HomeScreen] Favorite button tapped for: $name',
-                                    );
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: BackdropFilter(
-                                      filter: ImageFilter.blur(
-                                        sigmaX: 16,
-                                        sigmaY: 16,
-                                      ),
-                                      child: Container(
-                                        width: 42,
-                                        height: 42,
-                                        margin: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.15,
-                                          ),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.25,
-                                            ),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.favorite_outline,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // ── Hero section (icon + temp + date) ───────────
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                return RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  color: const Color(0xFF2FA6FF),
+                  strokeWidth: 3,
+                  child: Stack(
+                    children: [
+                      // ── Glavni sadržaj u Column sa scroll support ──────────────────────
+                      SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
                           children: [
-                            // Large floating weather icon
-                            SizedBox(
-                              height: 220,
-                              width: 220,
-                              child: Lottie.asset(asset, repeat: true),
-                            ),
-                            const SizedBox(height: 8),
-
-                            // Giant temperature
-                            Text(
-                              '${weather.main?.temp?.toStringAsFixed(0) ?? '--'}°',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 96,
-                                fontWeight: FontWeight.w700,
-                                height: 1.0,
-                                letterSpacing: -2,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-
-                            // Condition label
-                            Text(
-                              (condition ?? 'Unknown').toString(),
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 20,
-                                fontWeight: FontWeight.w400,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-
-                            // Date
-                            Text(
-                              dateText,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.60),
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-
-                            // Stats row
+                            // ── Top bar ─────────────────────────────────────
                             Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 32),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                              padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+                              child: Stack(
+                                alignment: Alignment.center,
                                 children: [
-                                  Expanded(
-                                    child: _statItem(
-                                      icon: Icons.air_rounded,
-                                      label: 'Wind',
-                                      value:
-                                          '${weather.wind?.speed?.toStringAsFixed(0) ?? '--'} km/h',
+                                  // ── Hamburger menu button (top left) ────────────────────
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(6),
+                                      child: const SideMenu(),
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
+
+                                  // ── City glass pill — tappable (center) ──────────────
+                                  GestureDetector(
+                                    onTap: _changeCity,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(50),
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(
+                                          sigmaX: 16,
+                                          sigmaY: 16,
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 18,
+                                            vertical: 9,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.15,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              50,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.25,
+                                              ),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.location_on_rounded,
+                                                color: Colors.white,
+                                                size: 16,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                name.isEmpty ? 'Cloudy' : name,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: 0.2,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    child: _divider(),
                                   ),
-                                  Expanded(
-                                    child: _statItem(
-                                      icon: Icons.water_drop_outlined,
-                                      label: 'Humidity',
-                                      value:
-                                          '${weather.main?.humidity ?? '--'}%',
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                    ),
-                                    child: _divider(),
-                                  ),
-                                  Expanded(
-                                    child: _statItem(
-                                      icon: Icons.umbrella_outlined,
-                                      label: 'Chance of rain',
-                                      value: chancePct,
+
+                                  // ── Heart button (top right) ────────────────────
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        // TODO: Implement favorite toggle
+                                        print(
+                                          '❤️ [HomeScreen] Favorite button tapped for: $name',
+                                        );
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(50),
+                                        child: BackdropFilter(
+                                          filter: ImageFilter.blur(
+                                            sigmaX: 16,
+                                            sigmaY: 16,
+                                          ),
+                                          child: Container(
+                                            width: 42,
+                                            height: 42,
+                                            margin: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.15,
+                                              ),
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.25,
+                                                ),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Icon(
+                                              Icons.favorite_outline,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 12),
+
+                            // ── Hero section (icon + temp + date) ───────────
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 12),
+                                // Large floating weather icon
+                                SizedBox(
+                                  height: 220,
+                                  width: 220,
+                                  child: Lottie.asset(asset, repeat: true),
+                                ),
+                                const SizedBox(height: 8),
+
+                                // Giant temperature
+                                Text(
+                                  '${weather.main?.temp?.toStringAsFixed(0) ?? '--'}°',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 96,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.0,
+                                    letterSpacing: -2,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+
+                                // Condition label
+                                Text(
+                                  (condition ?? 'Unknown').toString(),
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w400,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+
+                                // Date
+                                Text(
+                                  dateText,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.60),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 28),
+
+                                // Stats row
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(
+                                        child: _statItem(
+                                          icon: Icons.air_rounded,
+                                          label: 'Wind',
+                                          value:
+                                              '${weather.wind?.speed?.toStringAsFixed(0) ?? '--'} km/h',
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                        child: _divider(),
+                                      ),
+                                      Expanded(
+                                        child: _statItem(
+                                          icon: Icons.water_drop_outlined,
+                                          label: 'Humidity',
+                                          value:
+                                              '${weather.main?.humidity ?? '--'}%',
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                        child: _divider(),
+                                      ),
+                                      Expanded(
+                                        child: _statItem(
+                                          icon: Icons.umbrella_outlined,
+                                          label: 'Chance of rain',
+                                          value: chancePct,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                            ),
+                            const SizedBox(height: 32),
                           ],
                         ),
-                        const Spacer(),
-                      ],
-                    ),
-
-                    // ── Draggable bottom panel (na vrhu!) ────────────────────────
-                    if (hourly?.list != null)
-                      DraggableBottomPanel(
-                        hourly: hourly!,
-                        assetForCondition: _assetForCondition,
                       ),
-                  ],
+
+                      // ── Draggable bottom panel (na vrhu!) ────────────────────────
+                      if (hourly?.list != null)
+                        DraggableBottomPanel(
+                          hourly: hourly!,
+                          assetForCondition: _assetForCondition,
+                        ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -421,76 +448,92 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _errorView(String error, WeatherProvider provider) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.cloud_off_rounded,
-              color: Colors.white.withValues(alpha: 0.5),
-              size: 64,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              error.isEmpty ? "Couldn't load forecast." : error,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 20),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF2196F3),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      backgroundColor: Colors.white.withValues(alpha: 0.1),
+      color: const Color(0xFF2FA6FF),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.cloud_off_rounded,
+                  color: Colors.white.withValues(alpha: 0.5),
+                  size: 64,
                 ),
-              ),
-              onPressed: () => provider.retry(),
-              child: const Text('Try again'),
+                const SizedBox(height: 16),
+                Text(
+                  error.isEmpty ? "Couldn't load forecast." : error,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF2196F3),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => provider.retry(),
+                  child: const Text('Try again'),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _emptyView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.cloud_outlined,
-              color: Colors.white.withValues(alpha: 0.5),
-              size: 64,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Pick a city to see the forecast.',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 16,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF2196F3),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      backgroundColor: Colors.white.withValues(alpha: 0.1),
+      color: const Color(0xFF2FA6FF),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.cloud_outlined,
+                  color: Colors.white.withValues(alpha: 0.5),
+                  size: 64,
                 ),
-              ),
-              onPressed: _changeCity,
-              child: const Text('Pick a city'),
+                const SizedBox(height: 16),
+                Text(
+                  'Pick a city to see the forecast.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF2196F3),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: _changeCity,
+                  child: const Text('Pick a city'),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
