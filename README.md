@@ -18,6 +18,16 @@ A modern, intuitive weather application featuring smooth animations and rich wea
 - Pull-to-Refresh - Refresh weather data with smooth animations
 - Local Storage - Persistent storage of favorite locations using SharedPreferences
 
+## Screenshots
+
+<div align="center">
+  <img src="https://i.ibb.co/nMnqRPcr/Screenshot-1772031873.png" width="220" alt="Onboarding Screen">
+  <img src="https://i.ibb.co/7JGJtn4N/Screenshot-1772031899.png" width="220" alt="Home Screen">
+  <img src="https://i.ibb.co/67qyhz7z/Screenshot-1772031908.png" width="220" alt="City Search">
+  <img src="https://i.ibb.co/bMH2W0Y0/Screenshot-1772031917.png" width="220" alt="Forecast Details">
+</div>
+
+
 ## Technologies
 
 ### Frontend / Mobile
