@@ -6,6 +6,25 @@ import 'package:google_fonts/google_fonts.dart';
 class SideMenu extends StatelessWidget {
   const SideMenu({super.key});
 
+  void _showComingSoonToast(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Coming soon!',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: Colors.black.withValues(alpha: 0.7),
+        duration: const Duration(milliseconds: 1500),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
   void _showMenu(BuildContext context) {
     showGeneralDialog(
       context: context,
@@ -81,8 +100,8 @@ class SideMenu extends StatelessWidget {
                                   isActive: false,
                                   onTap: () {
                                     Navigator.pop(context);
+                                    _showComingSoonToast(context);
                                     print('📍 [Menu] Favorites tapped');
-                                    // TODO: Implement favorites page
                                   },
                                 ),
                                 const SizedBox(height: 16),
@@ -92,8 +111,8 @@ class SideMenu extends StatelessWidget {
                                   isActive: false,
                                   onTap: () {
                                     Navigator.pop(context);
+                                    _showComingSoonToast(context);
                                     print('⚙️ [Menu] Settings tapped');
-                                    // TODO: Implement settings page
                                   },
                                 ),
                                 const SizedBox(height: 16),
@@ -103,8 +122,8 @@ class SideMenu extends StatelessWidget {
                                   isActive: false,
                                   onTap: () {
                                     Navigator.pop(context);
+                                    _showComingSoonToast(context);
                                     print('ℹ️ [Menu] About tapped');
-                                    // TODO: Implement about page
                                   },
                                 ),
                                 const SizedBox(height: 16),
@@ -114,8 +133,8 @@ class SideMenu extends StatelessWidget {
                                   isActive: false,
                                   onTap: () {
                                     Navigator.pop(context);
+                                    _showComingSoonToast(context);
                                     print('💬 [Menu] Feedback tapped');
-                                    // TODO: Implement feedback feature
                                   },
                                 ),
                               ],
