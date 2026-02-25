@@ -121,6 +121,19 @@ class SideMenu extends StatelessWidget {
                               ],
                             ),
                           ),
+                          // Version text at the bottom
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(25, 0, 25, 20),
+                            child: Text(
+                              'Cloudy Beta 1.0',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white.withValues(alpha: 0.5),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
