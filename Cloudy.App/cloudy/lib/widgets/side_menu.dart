@@ -26,12 +26,16 @@ class SideMenu extends StatelessWidget {
             ),
             // Side menu
             SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(-1, 0),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-              ),
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(-1, 0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
               child: ClipRRect(
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(32),
@@ -40,7 +44,7 @@ class SideMenu extends StatelessWidget {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                   child: Container(
-                    width: 280,
+                    width: 320,
                     height: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.1),
@@ -55,59 +59,11 @@ class SideMenu extends StatelessWidget {
                       right: false,
                       child: Column(
                         children: [
-                          // Profile Header
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: 70,
-                                  height: 70,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF2FA6FF),
-                                        Color(0xFF0B1D4D),
-                                      ],
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 40,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Cloudy User',
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Weather enthusiast',
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white.withValues(alpha: 0.6),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Divider(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            thickness: 1,
-                            height: 1,
-                          ),
-                          const SizedBox(height: 8),
                           // Menu items
                           Expanded(
-                            child: ListView(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.max,
                               children: [
                                 _menuItem(
                                   icon: Icons.home_rounded,
@@ -118,6 +74,7 @@ class SideMenu extends StatelessWidget {
                                     print('🏠 [Menu] Home tapped');
                                   },
                                 ),
+                                const SizedBox(height: 16),
                                 _menuItem(
                                   icon: Icons.favorite_outline,
                                   label: 'Favorites',
@@ -128,6 +85,7 @@ class SideMenu extends StatelessWidget {
                                     // TODO: Implement favorites page
                                   },
                                 ),
+                                const SizedBox(height: 16),
                                 _menuItem(
                                   icon: Icons.settings_outlined,
                                   label: 'Settings',
@@ -138,6 +96,7 @@ class SideMenu extends StatelessWidget {
                                     // TODO: Implement settings page
                                   },
                                 ),
+                                const SizedBox(height: 16),
                                 _menuItem(
                                   icon: Icons.info_outline,
                                   label: 'About',
@@ -148,6 +107,7 @@ class SideMenu extends StatelessWidget {
                                     // TODO: Implement about page
                                   },
                                 ),
+                                const SizedBox(height: 16),
                                 _menuItem(
                                   icon: Icons.feedback_outlined,
                                   label: 'Feedback',
@@ -182,30 +142,40 @@ class SideMenu extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: isActive ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isActive ? const Color(0xFF2FA6FF) : Colors.white.withValues(alpha: 0.6),
-              size: 24,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.7),
-                fontSize: 15,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(25, 0, 25, 0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isActive
+                ? Colors.white.withValues(alpha: 0.15)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                icon,
+                color: isActive
+                    ? const Color(0xFF2FA6FF)
+                    : Colors.white.withValues(alpha: 0.6),
+                size: 24,
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  color: isActive
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.7),
+                  fontSize: 15,
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -230,11 +200,7 @@ class SideMenu extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: const Icon(
-              Icons.menu,
-              color: Colors.white,
-              size: 20,
-            ),
+            child: const Icon(Icons.menu, color: Colors.white, size: 20),
           ),
         ),
       ),
