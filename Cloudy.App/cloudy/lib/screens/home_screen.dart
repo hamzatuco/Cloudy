@@ -61,9 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'assets/clear_day.json';
   }
 
-
-
-
   Future<void> _changeCity() async {
     final city = await showDialog<String?>(
       context: context,
@@ -166,7 +163,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(50),
                               child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                                filter: ImageFilter.blur(
+                                  sigmaX: 16,
+                                  sigmaY: 16,
+                                ),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 18,
@@ -176,7 +176,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     color: Colors.white.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(50),
                                     border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.25),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.25,
+                                      ),
                                       width: 1,
                                     ),
                                   ),
@@ -211,21 +213,30 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: GestureDetector(
                               onTap: () {
                                 // TODO: Implement favorite toggle
-                                print('❤️ [HomeScreen] Favorite button tapped for: $name');
+                                print(
+                                  '❤️ [HomeScreen] Favorite button tapped for: $name',
+                                );
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(50),
                                 child: BackdropFilter(
-                                  filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 16,
+                                    sigmaY: 16,
+                                  ),
                                   child: Container(
                                     width: 42,
                                     height: 42,
                                     margin: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.15),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.15,
+                                      ),
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.25),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.25,
+                                        ),
                                         width: 1,
                                       ),
                                     ),
@@ -307,7 +318,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   child: _divider(),
                                 ),
                                 Expanded(
@@ -318,7 +331,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   child: _divider(),
                                 ),
                                 Expanded(
@@ -334,10 +349,30 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-
-                    // ── Dark bottom panel ────────────────────────────
-                    if (hourly?.list != null) _bottomPanel(hourly!, context),
                   ],
+                );
+              },
+            ),
+          ),
+
+          // ── Draggable bottom panel (at bottom of screen) ──────────────
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Consumer<WeatherProvider>(
+              builder: (context, weatherProvider, _) {
+                final hourly = weatherProvider.state.hourlyForecast;
+                if (hourly?.list == null) {
+                  return const SizedBox.shrink();
+                }
+                return DraggableScrollableSheet(
+                  initialChildSize: 0.25,
+                  minChildSize: 0.15,
+                  maxChildSize: 0.9,
+                  expand: false,
+                  builder: (context, scrollController) =>
+                      _bottomPanel(hourly!, context, scrollController),
                 );
               },
             ),
@@ -347,15 +382,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Bottom "Today" dark sheet ──────────────────────────────────────
-  Widget _bottomPanel(dynamic hourly, BuildContext context) {
+  // ── Draggable bottom sheet with hourly + 7-day forecast ────────────
+  Widget _bottomPanel(
+    dynamic hourly,
+    BuildContext context,
+    ScrollController scrollController,
+  ) {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF080E24).withValues(alpha: 0.85),
+            color: const Color(0xFF080E24).withValues(alpha: 0.95),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             border: Border(
               top: BorderSide(
@@ -364,11 +403,23 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+          child: ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
             children: [
+              // ── Handle bar ──────────────────────────────────────
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              // ── Today section ───────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -406,6 +457,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 14),
+              // ── Hourly forecast ─────────────────────────────────
               SizedBox(
                 height: 110,
                 child: ListView.builder(
@@ -423,7 +475,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     final temp =
                         '${item.main?.temp?.toStringAsFixed(0) ?? '--'}°';
                     final hour = '${time.hour.toString().padLeft(2, '0')}:00';
-
                     final isNow = index == 0;
 
                     return Padding(
@@ -437,6 +488,130 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
+              ),
+              const SizedBox(height: 24),
+              // ── 7 day forecast section ───────────────────────────
+              Text(
+                'Next 7 Days',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Placeholder za 7-day forecast (akan se učitati iz provider-a)
+              Consumer<WeatherProvider>(
+                builder: (context, weatherProvider, _) {
+                  final forecast = weatherProvider.state.forecast;
+
+                  if (forecast?.list == null || forecast!.list!.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Text(
+                        'Loading 7-day forecast...',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    children: List.generate(
+                      forecast.list!.length > 7 ? 7 : forecast.list!.length,
+                      (index) {
+                        final day = forecast.list![index];
+                        final date = DateTime.fromMillisecondsSinceEpoch(
+                          (day.dt ?? 0) * 1000,
+                        );
+                        final maxTemp =
+                            day.temp?.max?.toStringAsFixed(0) ?? '--';
+                        final minTemp =
+                            day.temp?.min?.toStringAsFixed(0) ?? '--';
+                        final condition =
+                            (day.weather?.isNotEmpty == true
+                                ? day.weather!.first.main
+                                : 'Unknown') ??
+                            'Unknown';
+                        final asset = _assetForCondition(condition);
+                        final dayName = _weekday(date.weekday);
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.07),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width: 50,
+                                  child: Text(
+                                    dayName,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: Lottie.asset(
+                                    asset,
+                                    repeat: false,
+                                    animate: false,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    condition!,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      '$maxTemp°',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '$minTemp°',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -541,9 +716,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       width: 1,
       height: 48,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-      ),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15)),
     );
   }
 
