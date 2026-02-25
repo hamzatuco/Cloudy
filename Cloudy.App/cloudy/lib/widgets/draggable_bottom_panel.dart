@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:cloudy/screens/seven_days_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -43,7 +42,7 @@ class _DraggableBottomPanelState extends State<DraggableBottomPanel> {
       snap: true,
       snapSizes: const [
         0.35,
-        0.60, 
+        0.60,
         0.95,
       ], // Tri stanja: minimizovano, srednje, maksimalno
       builder: (context, scrollController) {
@@ -105,31 +104,6 @@ class _DraggableBottomPanelState extends State<DraggableBottomPanel> {
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const SevenDaysScreen(),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    '7 days',
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.70,
-                                      ),
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right,
-                                    color: Colors.white.withValues(alpha: 0.70),
-                                    size: 18,
-                                  ),
-                                ],
                               ),
                             ),
                           ],
@@ -200,7 +174,7 @@ class _DraggableBottomPanelState extends State<DraggableBottomPanel> {
                               'Sun',
                               'Mon',
                             ];
-                            
+
                             final condition = [
                               'Clear',
                               'Rain',
@@ -210,10 +184,10 @@ class _DraggableBottomPanelState extends State<DraggableBottomPanel> {
                               'Clear',
                               'Clear',
                             ][index];
-                            
+
                             final minTemp = (12 + index);
                             final maxTemp = (12 + index + 1);
-                            
+
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
                               child: Container(
@@ -258,8 +232,9 @@ class _DraggableBottomPanelState extends State<DraggableBottomPanel> {
                                           Text(
                                             condition,
                                             style: TextStyle(
-                                              color: Colors.white
-                                                  .withValues(alpha: 0.65),
+                                              color: Colors.white.withValues(
+                                                alpha: 0.65,
+                                              ),
                                               fontSize: 12,
                                               fontWeight: FontWeight.w400,
                                             ),
@@ -277,10 +252,11 @@ class _DraggableBottomPanelState extends State<DraggableBottomPanel> {
                                         condition == 'Clear'
                                             ? Icons.sunny
                                             : condition == 'Rain'
-                                                ? Icons.cloud_queue_outlined
-                                                : Icons.wb_cloudy_outlined,
-                                        color: Colors.white
-                                            .withValues(alpha: 0.70),
+                                            ? Icons.cloud_queue_outlined
+                                            : Icons.wb_cloudy_outlined,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.70,
+                                        ),
                                         size: 28,
                                       ),
                                     ),
@@ -304,8 +280,9 @@ class _DraggableBottomPanelState extends State<DraggableBottomPanel> {
                                             Text(
                                               '/ $minTemp°',
                                               style: TextStyle(
-                                                color: Colors.white
-                                                    .withValues(alpha: 0.50),
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.50,
+                                                ),
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w500,
                                               ),
