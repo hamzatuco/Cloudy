@@ -1,5 +1,5 @@
 import 'package:cloudy/providers/weather_provider.dart';
-import 'package:cloudy/screens/home_screen.dart';
+import 'package:cloudy/screens/startup_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,12 +22,26 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => WeatherProvider(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Cloudy',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color(0xFF050816),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.white,
+            brightness: Brightness.dark,
+          ),
+          textTheme: GoogleFonts.poppinsTextTheme(
+            ThemeData(brightness: Brightness.dark).textTheme,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+          ),
         ),
-        home: const HomeScreen(),
+        home: const StartupScreen(),
       ),
     );
   }
