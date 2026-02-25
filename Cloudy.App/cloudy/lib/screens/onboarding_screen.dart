@@ -1,5 +1,6 @@
 import 'package:cloudy/providers/weather_provider.dart';
 import 'package:cloudy/providers/weather_state.dart';
+import 'package:cloudy/screens/city_search_dialog.dart';
 import 'package:cloudy/widgets/glass_card.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -20,17 +21,8 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _defaultCity = 'Sarajevo';
-  static const _cities = <String>[
-    'Sarajevo',
-    'Mostar',
-    'Tuzla',
-    'Banja Luka',
-    'Zenica',
-    'Bihać',
-  ];
 
   bool _busy = false;
-  bool _showCityPicker = false;
   String _selectedCity = _defaultCity;
   String? _error;
 
@@ -53,7 +45,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!serviceEnabled) {
       setState(() {
         _error = 'Location services are off. Turn them on or pick a city manually.';
-        _showCityPicker = true;
       });
       return null;
     }
@@ -68,7 +59,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       setState(() {
         _error =
             'Location permission was denied. Pick a city manually (this screen is only shown on first launch).';
-        _showCityPicker = true;
       });
       return null;
     }
@@ -106,7 +96,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         debugPrint('📍 [_useCurrentLocation] City name is empty');
         setState(() {
           _error = 'Couldn\'t detect your city. Pick a city manually.';
-          _showCityPicker = true;
         });
         return;
       }
@@ -212,39 +201,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         OutlinedButton(
                           onPressed: _busy
                               ? null
-                              : () {
-                                  setState(() => _showCityPicker = true);
+                              : () async {
+                                  final city = await showDialog<String?>(
+                                    context: context,
+                                    builder: (context) => const CitySearchDialog(),
+                                  );
+                                  if (city != null && city.isNotEmpty) {
+                                    setState(() => _selectedCity = city);
+                                    await _confirmCity();
+                                  }
                                 },
                           child: const Text('Pick a city manually'),
                         ),
-                        if (_showCityPicker) ...[
-                          const SizedBox(height: 14),
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedCity,
-                            items: _cities
-                                .map((c) => DropdownMenuItem<String>(
-                                      value: c,
-                                      child: Text(c),
-                                    ))
-                                .toList(),
-                            onChanged: _busy ? null : (v) => setState(() => _selectedCity = v ?? _defaultCity),
-                            decoration: const InputDecoration(
-                              labelText: 'City',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          FilledButton(
-                            onPressed: _busy ? null : _confirmCity,
-                            child: _busy
-                                ? const SizedBox(
-                                    height: 18,
-                                    width: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Text('Continue'),
-                          ),
-                        ],
                       ],
                     ),
                   ),
