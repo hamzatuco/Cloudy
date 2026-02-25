@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:cloudy/models/forecast_data.dart';
 import 'package:cloudy/models/geo_data.dart';
@@ -27,7 +28,13 @@ class WeatherRepository {
     String url = '$baseUrl$geoDirect?q=$city&limit=5&appid=$apiKey';
 
     try {
-      var res = await http.get(Uri.parse(url));
+      var res = await http.get(Uri.parse(url)).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('⏱️ getGeoData timed out');
+          throw TimeoutException('API request timed out');
+        },
+      );
 
       if (res.statusCode != 200) {
         debugPrint('❌ getGeoData error: ${res.statusCode} — ${res.body}');
@@ -48,7 +55,13 @@ class WeatherRepository {
         '$baseUrl$currentWeather?lat=${geoData.lat}&lon=${geoData.lon}&units=metric&appid=$apiKey';
 
     try {
-      var res = await http.get(Uri.parse(url));
+      var res = await http.get(Uri.parse(url)).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('⏱️ getWeatherData timed out');
+          throw TimeoutException('API request timed out');
+        },
+      );
 
       if (res.statusCode != 200) {
         debugPrint('❌ getWeatherData error: ${res.statusCode} — ${res.body}');
@@ -69,7 +82,13 @@ class WeatherRepository {
         '$baseUrl$dailyForecast?lat=${geoData.lat}&lon=${geoData.lon}&cnt=$cnt&units=metric&appid=$apiKey';
 
     try {
-      var res = await http.get(Uri.parse(url));
+      var res = await http.get(Uri.parse(url)).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('⏱️ getDailyForecast timed out');
+          throw TimeoutException('API request timed out');
+        },
+      );
 
       if (res.statusCode != 200) {
         debugPrint('Daily forecast endpoint returned ${res.statusCode}, using hourly fallback');
@@ -90,7 +109,13 @@ class WeatherRepository {
         '$baseUrl$forecast?lat=${geoData.lat}&lon=${geoData.lon}&units=metric&appid=$apiKey';
 
     try {
-      var res = await http.get(Uri.parse(url));
+      var res = await http.get(Uri.parse(url)).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('⏱️ getHourlyForecast timed out');
+          throw TimeoutException('API request timed out');
+        },
+      );
 
       if (res.statusCode != 200) {
         debugPrint('Error getting hourly forecast: ${res.statusCode}');
@@ -221,7 +246,13 @@ class WeatherRepository {
         getWeatherData(geoData),
         getDailyForecast(geoData),
         getHourlyForecast(geoData),
-      ]);
+      ]).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          debugPrint('⏱️ apiCallByCoords timed out waiting for API responses');
+          throw TimeoutException('Overall API timeout');
+        },
+      );
 
       debugPrint('🌐 [apiCallByCoords] All 3 API calls completed');
       final current = results[0] as WeatherData?;
