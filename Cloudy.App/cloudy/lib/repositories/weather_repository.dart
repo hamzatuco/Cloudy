@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloudy/models/forecast_data.dart';
@@ -10,14 +9,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../core/constants/api_endpoints.dart';
 
-// Primary working key — same key used by web
-const _hardcodedKey = '7cdbbf30a16a8bec55dfa9cd201d4dc1';
+// Fallback ensures the key is always available even if dotenv fails to load
+const _hardcodedKey = 'ecfe9721ce57e7558b9856da605d0795';
 
 String get apiKey {
-  if (kIsWeb) return _hardcodedKey;
+  if (kIsWeb) return '7cdbbf30a16a8bec55dfa9cd201d4dc1';
   try {
     final fromEnv = dotenv.env['WEATHER_API_KEY'] ?? '';
-    // Only use env key if it's non-empty AND different from an old broken key
     return fromEnv.isNotEmpty ? fromEnv : _hardcodedKey;
   } catch (_) {
     return _hardcodedKey;
@@ -46,34 +44,22 @@ class WeatherRepository {
   }
 
   Future<WeatherData?> getWeatherData(GeoData geoData) async {
-    final url =
+    String url =
         '$baseUrl$currentWeather?lat=${geoData.lat}&lon=${geoData.lon}&units=metric&appid=$apiKey';
-    debugPrint('🌤 Fetching weather URL: $url');
 
     try {
-      final res = await http
-          .get(Uri.parse(url))
-          .timeout(const Duration(seconds: 15));
-
-      debugPrint('🌤 Weather status: ${res.statusCode}');
-      debugPrint('🌤 Weather body: ${res.body}');
+      var res = await http.get(Uri.parse(url));
 
       if (res.statusCode != 200) {
-        debugPrint('❌ getWeatherData HTTP ${res.statusCode}: ${res.body}');
+        debugPrint('❌ getWeatherData error: ${res.statusCode} — ${res.body}');
         return null;
       }
 
-      try {
-        final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-        final weatherData = WeatherData.fromJson(decoded);
-        debugPrint('✅ WeatherData parsed: $weatherData');
-        return weatherData;
-      } catch (parseError) {
-        debugPrint('❌ JSON parse error: $parseError  |  body: ${res.body}');
-        return null;
-      }
-    } on Exception catch (e) {
-      debugPrint('❌ getWeatherData exception: $e');
+      WeatherData weatherData = WeatherData.fromJson(jsonDecode(res.body));
+      debugPrint(weatherData.toString());
+      return weatherData;
+    } catch (e) {
+      debugPrint('Exception in getWeatherData: $e');
       return null;
     }
   }
@@ -227,30 +213,36 @@ class WeatherRepository {
     required double lon,
   }) async {
     try {
+      debugPrint('🌐 [apiCallByCoords] START');
       final geoData = GeoData(lat: lat, lon: lon);
 
+      debugPrint('🌐 [apiCallByCoords] Running 3 parallel API calls...');
       final results = await Future.wait([
         getWeatherData(geoData),
         getDailyForecast(geoData),
         getHourlyForecast(geoData),
       ]);
 
+      debugPrint('🌐 [apiCallByCoords] All 3 API calls completed');
       final current = results[0] as WeatherData?;
       ForecastData? daily = results[1] as ForecastData?;
       final hourly = results[2] as HourlyForecastData?;
+      debugPrint('🌐 [apiCallByCoords] Parsed - current=${current?.name}, daily=${daily?.list?.length}, hourly=${hourly?.list?.length}');
 
       if (daily == null && hourly != null) {
-        debugPrint('⚡ Using hourly-to-daily fallback (coords)');
+        debugPrint('⚡ [apiCallByCoords] Using hourly-to-daily fallback');
         daily = _buildDailyFromHourly(hourly);
+        debugPrint('⚡ [apiCallByCoords] Fallback created ${daily.list?.length} days');
       }
 
+      debugPrint('🌐 [apiCallByCoords] DONE - returning data');
       return {
         'current': current,
         'daily': daily,
         'hourly': hourly,
       };
     } catch (e) {
-      debugPrint('Exception in apiCallByCoords: $e');
+      debugPrint('❌ [apiCallByCoords] Exception: $e');
       return null;
     }
   }
